@@ -12,13 +12,19 @@ def caesar_cipher(text, key, decrypt=False):
 
 def brute_force_decrypt(ciphertext):
     for key in range(26):
+        decrypted_text = caesar_cipher(ciphertext, key, decrypt=True)
+        st.write(f"Key {key}: {decrypted_text}")
+
+def brute_force_encrypt(ciphertext):
+    for key in range(26):
         decrypted_text = caesar_cipher(ciphertext, key, decrypt=False)
         st.write(f"Key {key}: {decrypted_text}")
+
 
 def main():
     st.title("Caesar Cipher Encryption/Decryption")
 
-    operation = st.sidebar.radio("Choose Operation", ["Encrypt", "Decrypt", "Brute Force Decrypt"])
+    operation = st.sidebar.radio("Choose Operation", ["Encrypt", "Decrypt", "Brute Force Decrypt", "Brute Force Encrypt"])
 
     key = st.sidebar.number_input("Enter Key", min_value=0, max_value=25, value=3)
 
@@ -26,6 +32,10 @@ def main():
         ciphertext = st.text_area("Enter Ciphertext", "")
         if st.button("Brute Force Decrypt"):
             brute_force_decrypt(ciphertext)
+    elif operation == "Brute Force Decrypt":
+        ciphertext = st.text_area("Enter Ciphertext", "")
+        if st.button("Brute Force Encrypt"):
+            brute_force_encrypt(ciphertext)
     elif operation == "Decrypt":
         ciphertext = st.text_area("Enter Ciphertext", "")
         decrypted_text = caesar_cipher(ciphertext, key, decrypt=True)
