@@ -19,15 +19,68 @@ def generate_playfair_matrix(key):
 
     return playfair_matrix
 
+def find_position(matrix, char):
+    # Find the position of a character in the Playfair matrix
+    for i in range(5):
+        for j in range(5):
+            if matrix[i][j] == char:
+                return i, j
+
 def encrypt_playfair(plain_text, playfair_matrix):
-    # Implementation of Playfair encryption
-    # (You can replace this with a more sophisticated algorithm)
-    pass  # Your implementation here
+    def handle_same_row(i, j, matrix):
+        return matrix[i][(j + 1) % 5], matrix[i][(j + 1) % 5]
+
+    def handle_same_column(i, j, matrix):
+        return matrix[(i + 1) % 5][j], matrix[(i + 1) % 5][j]
+
+    def handle_different_row_column(i1, j1, i2, j2, matrix):
+        return matrix[i1][j2], matrix[i2][j1]
+
+    def process_bigrams(bigrams, matrix, encrypt=True):
+        result = []
+        for bigram in bigrams:
+            char1, char2 = bigram[0], bigram[1]
+            i1, j1 = find_position(matrix, char1)
+            i2, j2 = find_position(matrix, char2)
+
+            if i1 == i2:
+                result.extend(handle_same_row(i1, j1, matrix))
+            elif j1 == j2:
+                result.extend(handle_same_column(i1, j1, matrix))
+            else:
+                result.extend(handle_different_row_column(i1, j1, i2, j2, matrix))
+
+        return result
+
+    plain_text = plain_text.replace("J", "I")  # Replace 'J' with 'I'
+    bigrams = [plain_text[i:i + 2] for i in range(0, len(plain_text), 2)]
+
+    result = process_bigrams(bigrams, playfair_matrix)
+
+    return "".join(result)
 
 def decrypt_playfair(cipher_text, playfair_matrix):
-    # Implementation of Playfair decryption
-    # (You can replace this with a more sophisticated algorithm)
-    pass  # Your implementation here
+    def process_bigrams(bigrams, matrix):
+        result = []
+        for bigram in bigrams:
+            char1, char2 = bigram[0], bigram[1]
+            i1, j1 = find_position(matrix, char1)
+            i2, j2 = find_position(matrix, char2)
+
+            if i1 == i2:
+                result.extend(handle_same_row(i1, j1, matrix))
+            elif j1 == j2:
+                result.extend(handle_same_column(i1, j1, matrix))
+            else:
+                result.extend(handle_different_row_column(i1, j1, i2, j2, matrix))
+
+        return result
+
+    bigrams = [cipher_text[i:i + 2] for i in range(0, len(cipher_text), 2)]
+
+    result = process_bigrams(bigrams, playfair_matrix)
+
+    return "".join(result)
 
 def main():
     st.title("Playfair Cipher Encryptor/Decryptor")
