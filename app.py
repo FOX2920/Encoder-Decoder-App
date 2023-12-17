@@ -1,109 +1,94 @@
 import streamlit as st
 
 def generate_playfair_matrix(key):
-    # Implementation of Playfair matrix generation based on the key
-    # (You can replace this with a more sophisticated algorithm)
-    alphabet = "ABCDEFGHIKLMNOPQRSTUVWXYZ"  # excluding 'J'
-    key = key.upper().replace("J", "I")
+    key = key.upper().replace('J', 'I')  # Convert to uppercase and replace 'J' with 'I'
+    alphabet = "ABCDEFGHIKLMNOPQRSTUVWXYZ"
     key_set = set(key)
-    remaining_chars = [char for char in alphabet if char not in key_set]
+    remaining_letters = [l for l in alphabet if l not in key_set]
 
-    playfair_matrix = [[0] * 5 for _ in range(5)]
-    key += "".join(remaining_chars)
-    key_index = 0
+    matrix = [[0] * 5 for _ in range(5)]
+    key += ''.join(remaining_letters)
 
+    k = 0
     for i in range(5):
         for j in range(5):
-            playfair_matrix[i][j] = key[key_index]
-            key_index += 1
+            matrix[i][j] = key[k]
+            k += 1
 
-    return playfair_matrix
+    return matrix
 
 def find_position(matrix, char):
-    # Find the position of a character in the Playfair matrix
     for i in range(5):
         for j in range(5):
             if matrix[i][j] == char:
                 return i, j
 
-def encrypt_playfair(plain_text, playfair_matrix):
-    def handle_same_row(i, j, matrix):
-        return matrix[i][(j + 1) % 5], matrix[i][(j + 1) % 5]
+def playfair_encrypt(plain_text, key):
+    matrix = generate_playfair_matrix(key)
+    encrypted_text = ""
+    plain_text = plain_text.upper().replace('J', 'I')
 
-    def handle_same_column(i, j, matrix):
-        return matrix[(i + 1) % 5][j], matrix[(i + 1) % 5][j]
+    i = 0
+    while i < len(plain_text):
+        char1 = plain_text[i]
+        char2 = plain_text[i + 1] if i + 1 < len(plain_text) else 'X'
 
-    def handle_different_row_column(i1, j1, i2, j2, matrix):
-        return matrix[i1][j2], matrix[i2][j1]
+        row1, col1 = find_position(matrix, char1)
+        row2, col2 = find_position(matrix, char2)
 
-    def process_bigrams(bigrams, matrix, encrypt=True):
-        result = []
-        for bigram in bigrams:
-            char1, char2 = bigram[0], bigram[1]
-            i1, j1 = find_position(matrix, char1)
-            i2, j2 = find_position(matrix, char2)
+        if row1 == row2:  # Same row
+            encrypted_text += matrix[row1][(col1 + 1) % 5] + matrix[row2][(col2 + 1) % 5]
+        elif col1 == col2:  # Same column
+            encrypted_text += matrix[(row1 + 1) % 5][col1] + matrix[(row2 + 1) % 5][col2]
+        else:  # Different row and column
+            encrypted_text += matrix[row1][col2] + matrix[row2][col1]
 
-            if i1 == i2:
-                result.extend(handle_same_row(i1, j1, matrix))
-            elif j1 == j2:
-                result.extend(handle_same_column(i1, j1, matrix))
-            else:
-                result.extend(handle_different_row_column(i1, j1, i2, j2, matrix))
+        i += 2
 
-        return result
+    return encrypted_text
 
-    plain_text = plain_text.replace("J", "I")  # Replace 'J' with 'I'
-    bigrams = [plain_text[i:i + 2] for i in range(0, len(plain_text), 2)]
+def playfair_decrypt(cipher_text, key):
+    matrix = generate_playfair_matrix(key)
+    decrypted_text = ""
 
-    result = process_bigrams(bigrams, playfair_matrix)
+    i = 0
+    while i < len(cipher_text):
+        char1 = cipher_text[i]
+        char2 = cipher_text[i + 1]
 
-    return "".join(result)
+        row1, col1 = find_position(matrix, char1)
+        row2, col2 = find_position(matrix, char2)
 
-def decrypt_playfair(cipher_text, playfair_matrix):
-    def process_bigrams(bigrams, matrix):
-        result = []
-        for bigram in bigrams:
-            char1, char2 = bigram[0], bigram[1]
-            i1, j1 = find_position(matrix, char1)
-            i2, j2 = find_position(matrix, char2)
+        if row1 == row2:  # Same row
+            decrypted_text += matrix[row1][(col1 - 1) % 5] + matrix[row2][(col2 - 1) % 5]
+        elif col1 == col2:  # Same column
+            decrypted_text += matrix[(row1 - 1) % 5][col1] + matrix[(row2 - 1) % 5][col2]
+        else:  # Different row and column
+            decrypted_text += matrix[row1][col2] + matrix[row2][col1]
 
-            if i1 == i2:
-                result.extend(handle_same_row(i1, j1, matrix))
-            elif j1 == j2:
-                result.extend(handle_same_column(i1, j1, matrix))
-            else:
-                result.extend(handle_different_row_column(i1, j1, i2, j2, matrix))
+        i += 2
 
-        return result
-
-    bigrams = [cipher_text[i:i + 2] for i in range(0, len(cipher_text), 2)]
-
-    result = process_bigrams(bigrams, playfair_matrix)
-
-    return "".join(result)
+    return decrypted_text
 
 def main():
-    st.title("Playfair Cipher Encryptor/Decryptor")
+    st.title("Playfair Cipher Tool")
 
-    action = st.radio("Choose Action", ("Encrypt", "Decrypt"))
+    action = st.selectbox("Select Action", ["Encrypt", "Decrypt"])
 
-    key = st.text_input("Enter Key (e.g., PLAYFAIR)", max_chars=25).upper()
-    input_text = st.text_area("Enter Text")
+    key = st.text_input("Enter Key:")
+    text = st.text_area("Enter Text:")
 
-    if key and input_text:
-        playfair_matrix = generate_playfair_matrix(key)
-
-        st.subheader("Playfair Matrix:")
-        st.table(playfair_matrix)
+    if key and text:
+        key_matrix = generate_playfair_matrix(key)
+        st.text("Playfair Matrix:")
+        st.write(key_matrix)
 
         if action == "Encrypt":
-            cipher_text = encrypt_playfair(input_text.upper(), playfair_matrix)
-            st.subheader("Encrypted Text:")
-            st.text(cipher_text)
+            result = playfair_encrypt(text, key)
+            st.success(f"Encrypted Text: {result}")
         elif action == "Decrypt":
-            plain_text = decrypt_playfair(input_text.upper(), playfair_matrix)
-            st.subheader("Decrypted Text:")
-            st.text(plain_text)
+            result = playfair_decrypt(text, key)
+            st.success(f"Decrypted Text: {result}")
 
 if __name__ == "__main__":
     main()
