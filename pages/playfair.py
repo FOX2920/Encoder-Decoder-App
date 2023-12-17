@@ -1,83 +1,76 @@
 import streamlit as st
 
-
 def generate_playfair_matrix(key):
-    key = key.replace("J", "I")
-    key = "".join(sorted(set(key), key=key.index))
-    matrix = [['' for _ in range(5)] for _ in range(5)]
-    k = 0
-    for i in range(5):
-        for j in range(5):
-            if k < len(key):
-                matrix[i][j] = key[k]
-                k += 1
-            else:
-                for ch in "ABCDEFGHIKLMNOPQRSTUVWXYZ":
-                    if ch not in key:
-                        matrix[i][j] = ch
-                        break
+    key = key.replace("J", "I")  # Treat I and J as the same letter
+    key = key.upper()
+    key = "".join(sorted(set(key), key=key.find))  # Remove duplicate letters and sort
+    alphabet = "ABCDEFGHIKLMNOPQRSTUVWXYZ"
+    matrix = [list(key[i:i + 5]) + list(filter(lambda c: c not in key, alphabet))[j:j + 5] for i, j in zip(range(0, 25, 5), range(0, 25, 5))]
     return matrix
 
-
 def find_position(matrix, char):
-    for i in range(5):
-        for j in range(5):
-            if matrix[i][j] == char:
-                return i, j
-    return None
+    for i, row in enumerate(matrix):
+        if char in row:
+            return i, row.index(char)
 
-
-def encrypt(plain_text, matrix):
-    plain_text = plain_text.replace("J", "I")
-    pairs = [plain_text[i:i + 2] for i in range(0, len(plain_text), 2)]
+def playfair_encrypt(plain_text, key):
+    matrix = generate_playfair_matrix(key)
     cipher_text = ""
+    plain_text = plain_text.upper().replace("J", "I")
+    pairs = [plain_text[i:i + 2] for i in range(0, len(plain_text), 2)]
+
     for pair in pairs:
         row1, col1 = find_position(matrix, pair[0])
         row2, col2 = find_position(matrix, pair[1])
+
         if row1 == row2:
             cipher_text += matrix[row1][(col1 + 1) % 5] + matrix[row2][(col2 + 1) % 5]
         elif col1 == col2:
             cipher_text += matrix[(row1 + 1) % 5][col1] + matrix[(row2 + 1) % 5][col2]
         else:
             cipher_text += matrix[row1][col2] + matrix[row2][col1]
+
     return cipher_text
 
-
-def decrypt(cipher_text, matrix):
-    pairs = [cipher_text[i:i + 2] for i in range(0, len(cipher_text), 2)]
+def playfair_decrypt(cipher_text, key):
+    matrix = generate_playfair_matrix(key)
     plain_text = ""
+    pairs = [cipher_text[i:i + 2] for i in range(0, len(cipher_text), 2)]
+
     for pair in pairs:
         row1, col1 = find_position(matrix, pair[0])
         row2, col2 = find_position(matrix, pair[1])
+
         if row1 == row2:
             plain_text += matrix[row1][(col1 - 1) % 5] + matrix[row2][(col2 - 1) % 5]
         elif col1 == col2:
             plain_text += matrix[(row1 - 1) % 5][col1] + matrix[(row2 - 1) % 5][col2]
         else:
             plain_text += matrix[row1][col2] + matrix[row2][col1]
+
     return plain_text
-
-
+    
 def playfair_page():
-    st.title("Playfair Cipher Encryption/Decryption")
-
-    option = st.radio("Select an option:", ("Encrypt", "Decrypt"))
-
-    key = st.text_input("Enter the key:")
-    plain_text = st.text_input("Enter the plain text:")
-
-    if key and plain_text:
-        key = key.upper()
+    # Streamlit UI
+    st.title("Playfair Cipher Encryption and Decryption")
+    
+    action = st.radio("Select Action", ["Encrypt", "Decrypt"])
+    
+    key = st.text_input("Enter Key:")
+    text_input_label = "Enter Plain Text to Encrypt:" if action == "Encrypt" else "Enter Cipher Text to Decrypt:"
+    text_input = st.text_area(text_input_label)
+    
+    if st.button(f"{action} Text"):
+        if key and text_input:
+            if action == "Encrypt":
+                result = playfair_encrypt(text_input, key)
+            else:
+                result = playfair_decrypt(text_input, key)
+    
+            st.success(f"Result: {result}")
+    
+    # Display Playfair Matrix
+    if key:
         matrix = generate_playfair_matrix(key)
-
         st.text("Playfair Matrix:")
-        st.write(matrix)
-
-        if option == "Encrypt":
-            cipher_text = encrypt(plain_text.upper(), matrix)
-            st.success(f"Encrypted Text: {cipher_text}")
-        else:
-            cipher_text = st.text_input("Enter the cipher text:")
-            if cipher_text:
-                plain_text = decrypt(cipher_text.upper(), matrix)
-                st.success(f"Decrypted Text: {plain_text}")
+        st.table(matrix)
