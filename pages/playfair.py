@@ -18,48 +18,53 @@ def find_coordinates(matrix, char):
             if matrix[i, j] == char:
                 return i, j
 
-def playfair_encrypt(plaintext, key):
+def encrypt_playfair(plaintext, key):
     matrix = generate_playfair_matrix(key)
-
-    # Preprocess the plaintext
-    plaintext = plaintext.upper().replace("J", "I")
-    plaintext_pairs = [plaintext[i:i + 2] for i in range(0, len(plaintext), 2)]
-
-    # Encrypt pairs
     ciphertext = ""
-    for pair in plaintext_pairs:
-        x1, y1 = find_coordinates(matrix, pair[0])
-        x2, y2 = find_coordinates(matrix, pair[1])
+    plaintext = plaintext.upper().replace("J", "I")
 
-        if x1 == x2:
-            ciphertext += matrix[x1, (y1 + 1) % 5] + matrix[x2, (y2 + 1) % 5]
-        elif y1 == y2:
-            ciphertext += matrix[(x1 + 1) % 5, y1] + matrix[(x2 + 1) % 5, y2]
+    for i in range(0, len(plaintext), 2):
+        pair1 = plaintext[i]
+        pair2 = plaintext[i + 1] if i + 1 < len(plaintext) else 'X'
+
+        row1, col1 = find_position(matrix, pair1)
+        row2, col2 = find_position(matrix, pair2)
+
+        if row1 == row2:
+            ciphertext += matrix[row1][(col1 + 1) % 5]
+            ciphertext += matrix[row2][(col2 + 1) % 5]
+        elif col1 == col2:
+            ciphertext += matrix[(row1 + 1) % 5][col1]
+            ciphertext += matrix[(row2 + 1) % 5][col2]
         else:
-            ciphertext += matrix[x1, y2] + matrix[x2, y1]
+            ciphertext += matrix[row1][col2]
+            ciphertext += matrix[row2][col1]
 
     return ciphertext
 
-def playfair_decrypt(ciphertext, key):
+def decrypt_playfair(ciphertext, key):
     matrix = generate_playfair_matrix(key)
-
-    # Preprocess the ciphertext
-    ciphertext_pairs = [ciphertext[i:i + 2] for i in range(0, len(ciphertext), 2)]
-
-    # Decrypt pairs
     plaintext = ""
-    for pair in ciphertext_pairs:
-        x1, y1 = find_coordinates(matrix, pair[0])
-        x2, y2 = find_coordinates(matrix, pair[1])
 
-        if x1 == x2:
-            plaintext += matrix[x1, (y1 - 1) % 5] + matrix[x2, (y2 - 1) % 5]
-        elif y1 == y2:
-            plaintext += matrix[(x1 - 1) % 5, y1] + matrix[(x2 - 1) % 5, y2]
+    for i in range(0, len(ciphertext), 2):
+        pair1 = ciphertext[i]
+        pair2 = ciphertext[i + 1]
+
+        row1, col1 = find_position(matrix, pair1)
+        row2, col2 = find_position(matrix, pair2)
+
+        if row1 == row2:
+            plaintext += matrix[row1][(col1 - 1) % 5]
+            plaintext += matrix[row2][(col2 - 1) % 5]
+        elif col1 == col2:
+            plaintext += matrix[(row1 - 1) % 5][col1]
+            plaintext += matrix[(row2 - 1) % 5][col2]
         else:
-            plaintext += matrix[x1, y2] + matrix[x2, y1]
+            plaintext += matrix[row1][col2]
+            plaintext += matrix[row2][col1]
 
     return plaintext
+
     
 def playfair_page():
     st.title("Playfair Cipher Tool")
@@ -79,11 +84,11 @@ def playfair_page():
     # Input text
     if operation == "Encrypt":
         plaintext = st.text_area("Enter the plaintext:")
-        ciphertext = playfair_encrypt(plaintext, key)
+        ciphertext = encrypt_playfair(plaintext, key)
         st.write("Ciphertext:")
         st.write(ciphertext)
     elif operation == "Decrypt":
         ciphertext = st.text_area("Enter the ciphertext:")
-        plaintext = playfair_decrypt(ciphertext, key)
+        plaintext = decrypt(ciphertext, key)
         st.write("Decrypted Text:")
         st.write(plaintext)
