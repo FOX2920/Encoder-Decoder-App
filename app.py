@@ -1,36 +1,16 @@
+# app.py
 import streamlit as st
-
-def caesar_cipher(text, key, decrypt=False):
-    result = ""
-    for char in text:
-        if char.isalpha():
-            shift = ord('a') if char.islower() else ord('A')
-            result += chr((ord(char) - shift + key * (1 if not decrypt else -1)) % 26 + shift)
-        else:
-            result += char
-    return result
-
-def brute_force_decrypt(ciphertext):
-    for key in range(26):
-        decrypted_text = caesar_cipher(ciphertext, key, decrypt=True)
-        st.write(f"Key {key}: {decrypted_text}")
+from pages.Vigenere import vigenere_page
+from pages.playfair import playfair_page
 
 def main():
-    st.title("Caesar Cipher Encryption/Decryption")
+    st.sidebar.title("Choose a Cipher")
+    selected_cipher = st.sidebar.radio("", ("Vigenère Cipher", "Playfair Cipher"))
 
-    operation = st.sidebar.radio("Choose Operation", ["Encrypt", "Decrypt", "Brute Force Decrypt"])
-
-    key = st.sidebar.number_input("Enter Key", min_value=0, max_value=25, value=3)
-
-    if operation == "Brute Force Decrypt":
-        ciphertext = st.text_area("Enter Ciphertext", "")
-        if st.button("Brute Force Decrypt"):
-            brute_force_decrypt(ciphertext)
-    else:
-        text = st.text_area(f"Enter {'Plaintext' if operation=='Encrypt' else 'Ciphertext'}", "")
-        result = caesar_cipher(text, key, decrypt=(operation == "Decrypt"))
-
-        st.write(f"Result: {result}")
+    if selected_cipher == "Vigenère Cipher":
+        vigenere_page()
+    elif selected_cipher == "Playfair Cipher":
+        playfair_page()
 
 if __name__ == "__main__":
     main()
