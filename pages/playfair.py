@@ -1,22 +1,25 @@
 import streamlit as st
-import numpy as np
 
 def generate_playfair_matrix(key):
-    key = key.replace("J", "I")
-    key_set = sorted(set(key), key=key.index)
+    # Remove duplicate characters from the key
+    key = "".join(sorted(set(key.upper()), key=key.find))
+
+    # Fill the matrix with the key
+    matrix = [list(key[i:i+5]) for i in range(0, len(key), 5)]
+
+    # Fill the remaining cells with the remaining alphabet (excluding 'J')
     alphabet = "ABCDEFGHIKLMNOPQRSTUVWXYZ"
-    remaining_letters = [letter for letter in alphabet if letter not in key_set]
+    for char in alphabet:
+        if char not in key:
+            matrix.append(char)
 
-    playfair_matrix = np.array(list(key_set + remaining_letters))
-    playfair_matrix = playfair_matrix.reshape(5, 5)
+    return matrix
 
-    return playfair_matrix
-
-def find_coordinates(matrix, char):
-    for i in range(5):
-        for j in range(5):
-            if matrix[i, j] == char:
-                return i, j
+def find_position(matrix, char):
+    for row_idx, row in enumerate(matrix):
+        if char in row:
+            col_idx = row.index(char)
+            return row_idx, col_idx
 
 def encrypt_playfair(plaintext, key):
     matrix = generate_playfair_matrix(key)
@@ -62,33 +65,30 @@ def decrypt_playfair(ciphertext, key):
         else:
             plaintext += matrix[row1][col2]
             plaintext += matrix[row2][col1]
-
+            
     return plaintext
 
     
 def playfair_page():
-    st.title("Playfair Cipher Tool")
+    st.title("Playfair Cipher Encryption and Decryption")
 
     # Input key
-    key = st.text_input("Enter the key:")
-    key = key.upper().replace(" ", "")
+    key = st.text_input("Enter the Playfair cipher key:")
 
-    # Generate and display Playfair matrix
-    matrix = generate_playfair_matrix(key)
-    st.write("Playfair Matrix:")
-    st.write(matrix)
+    # Input plaintext or ciphertext
+    text_input = st.text_area("Enter the plaintext or ciphertext:")
 
-    # Select operation
-    operation = st.radio("Select operation:", ("Encrypt", "Decrypt"))
+    # Select operation (encrypt or decrypt)
+    operation = st.radio("Select operation:", ["Encrypt", "Decrypt"])
 
-    # Input text
-    if operation == "Encrypt":
-        plaintext = st.text_area("Enter the plaintext:")
-        ciphertext = encrypt_playfair(plaintext, key)
-        st.write("Ciphertext:")
-        st.write(ciphertext)
-    elif operation == "Decrypt":
-        ciphertext = st.text_area("Enter the ciphertext:")
-        plaintext = decrypt(ciphertext, key)
-        st.write("Decrypted Text:")
-        st.write(plaintext)
+    if st.button("Perform Operation"):
+        if operation == "Encrypt":
+            result = encrypt_playfair(text_input, key)
+        elif operation == "Decrypt":
+            result = decrypt_playfair(text_input, key)
+        else:
+            result = "Invalid operation"
+
+        # Display result
+        st.subheader(f"Result ({operation}):")
+        st.write(result)
