@@ -47,12 +47,15 @@ text = st.text_area("Enter your message:")
 # Input key
 key = st.text_input("Enter the encryption/decryption key:")
 
-# Encryption button
-if st.button("Encrypt"):
-    encrypted_result = vigenere_encrypt(text, key)
-    st.success(f"Encrypted Message: {encrypted_result}")
+# Radio box for choosing between encryption and decryption
+operation = st.radio("Select Operation:", ["Encrypt", "Decrypt"])
 
-# Decryption button
-if st.button("Decrypt"):
-    decrypted_result = vigenere_decrypt(text, key)
-    st.success(f"Decrypted Message: {decrypted_result}")
+# Encryption and Decryption buttons
+if st.button(operation):
+    if operation == "Encrypt":
+        result = vigenere_encrypt(text, key)
+        st.success(f"Encrypted Message: {result}")
+    elif operation == "Decrypt":
+        result = vigenere_decrypt(text, key)
+        st.success(f"Decrypted Message: {result}")
+
