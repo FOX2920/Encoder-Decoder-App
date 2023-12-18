@@ -74,25 +74,22 @@ def playfair_decrypt(encrypted_text, key):
     return decrypted_text
 
 # Streamlit app
-st.title("Playfair Cipher Encryption and Decryption")
+st.title("Vigenère Cipher Encryption and Decryption")
 
-# Input
-action = st.radio("Select Action", ["Encrypt", "Decrypt"])
+# Input text
+text = st.text_area("Enter your message:")
 
-if action == "Encrypt":
-    plaintext = st.text_input("Enter the plain text:")
-    key = st.text_input("Enter the key:")
-    if st.button("Encrypt"):
-        encrypted_text = playfair_encrypt(plaintext, key)
-        st.success(f"Encrypted Text: {encrypted_text}")
+# Input key
+key = st.text_input("Enter the encryption/decryption key:")
 
-elif action == "Decrypt":
-    ciphertext = st.text_input("Enter the cipher text:")
-    key = st.text_input("Enter the key:")
-    if st.button("Decrypt"):
-        decrypted_text = playfair_decrypt(ciphertext, key)
-        st.success(f"Decrypted Text: {decrypted_text}")
+# Radio box for choosing between encryption and decryption
+operation = st.radio("Select Operation:", ["Encrypt", "Decrypt"])
 
-# Display Playfair matrix table
-key_matrix = generate_key_matrix(key)
-st.table(key_matrix)
+# Encryption and Decryption buttons
+if st.button(operation):
+    if operation == "Encrypt":
+        result = vigenere_encrypt(text, key)
+        st.success(f"Encrypted Message: {result}")
+    elif operation == "Decrypt":
+        result = vigenere_decrypt(text, key)
+        st.success(f"Decrypted Message: {result}")
