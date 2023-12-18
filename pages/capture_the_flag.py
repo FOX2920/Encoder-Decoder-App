@@ -11,8 +11,7 @@ def text_to_ascii(text):
     return ' '.join(str(ord(char)) for char in text)
 
 def main():
-    st.title("ASCII Encoder and Decoder")
-    st.markdown(task_description)
+    st.title("Capture The Flag")
 
     operation = st.radio("Select Operation:", ["Decode ASCII to Text", "Encode Text to ASCII"])
 
