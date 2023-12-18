@@ -15,13 +15,13 @@ def main():
 
     operation = st.radio("Select Operation:", ["ASCII to Text", "Text to ASCII"])
 
-    if operation == "Decode ASCII to Text":
+    if operation == "ASCII to Text":
         ascii_input = st.text_area("Enter ASCII Codes:")
         if st.button("Decode"):
             decoded_text = ascii_to_text(ascii_input)
             st.text(f"Decoded Text: {decoded_text}")
 
-    elif operation == "Encode Text to ASCII":
+    elif operation == "Text to ASCII":
         text_input = st.text_area("Enter Text:")
         if st.button("Encode"):
             encoded_ascii = text_to_ascii(text_input)
