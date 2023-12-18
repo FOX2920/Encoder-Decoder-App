@@ -57,10 +57,18 @@ def playfair_encrypt(plain_text, key):
 def playfair_decrypt(encrypted_text, key):
     key_matrix = generate_key_matrix(key)
     decrypted_text = ''
+    
+    # Preprocess plaintext
+    plain_text = encrypted_text.upper()
+    plain_text = [char for char in plain_text if char.isalpha()]
+    
+    # Add a placeholder character if the length is odd
+    if len(plain_text) % 2 == 1:
+        plain_text.append('X')
 
     # Decrypt pairs of letters
-    for i in range(0, len(encrypted_text), 2):
-        char1, char2 = encrypted_text[i], encrypted_text[i + 1]
+    for i in range(0, len(plain_text), 2):
+        char1, char2 = plain_text[i], plain_text[i + 1]
         row1, col1 = find_position(key_matrix, char1)
         row2, col2 = find_position(key_matrix, char2)
 
@@ -72,26 +80,26 @@ def playfair_decrypt(encrypted_text, key):
             decrypted_text += key_matrix[row1][col2] + key_matrix[row2][col1]
 
     return decrypted_text
-
 def main():
     st.title("Playfair Cipher Encryption and Decryption")
 
     # Input plaintext and key from the user
     plaintext = st.text_input("Enter the plaintext:")
     key = st.text_input("Enter the key:")
-
+    
     # Display Playfair matrix table
     key_matrix = generate_key_matrix(key)
     st.table(key_matrix)
-
-    if st.button("Encrypt"):
+    # Radio buttons for encryption and decryption
+    operation = st.radio("Select Operation:", ["Encrypt", "Decrypt"])
+    if operation == "Encrypt":
         # Encrypt the plaintext
         encrypted_text = playfair_encrypt(plaintext, key)
         st.success(f"Encrypted Text: {encrypted_text}")
 
-    if st.button("Decrypt"):
+    elif operation == "Decrypt":
         # Decrypt the encrypted text
-        decrypted_text = playfair_decrypt(encrypted_text, key)
+        decrypted_text = playfair_decrypt(plaintext, key)
         st.success(f"Decrypted Text: {decrypted_text}")
 
 if __name__ == "__main__":
