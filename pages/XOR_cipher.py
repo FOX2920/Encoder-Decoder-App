@@ -20,6 +20,17 @@ def xor_decrypt(image_path, key):
         return f"Error: {str(e)}"
 
 
+def brute_force_decrypt(image_path):
+    results = {}
+    for key in range(256):  # Assuming key values are between 0 and 255
+        try:
+            decrypted_text = xor_decrypt(image_path, bytes([key] * 6))
+            results[key] = decrypted_text
+        except:
+            pass
+    return results
+
+
 def main():
     st.title("Image Decryption with XOR Cipher")
 
@@ -44,6 +55,17 @@ def main():
                     st.text(f"Decrypted Flag: {decrypted_text}")
                 except Exception as e:
                     st.error(f"Error decrypting image: {str(e)}")
+
+            if st.button("Brute-Force Decrypt"):
+                try:
+                    image_bytes = uploaded_file.read()
+                    image_path = io.BytesIO(image_bytes)
+                    brute_force_results = brute_force_decrypt(image_path)
+                    st.text("Brute-Force Decryption Results:")
+                    for possible_key, possible_flag in brute_force_results.items():
+                        st.text(f"Key: {possible_key}, Flag: {possible_flag}")
+                except Exception as e:
+                    st.error(f"Error during brute-force decryption: {str(e)}")
 
 if __name__ == "__main__":
     main()
