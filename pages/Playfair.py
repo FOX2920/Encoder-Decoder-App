@@ -26,6 +26,7 @@ def find_position(matrix, char):
 def playfair_encrypt(plain_text, key):
     key_matrix = generate_key_matrix(key)
     encrypted_text = ''
+    case_info = []  # Store case information for each letter
 
     # Preprocess plaintext
     plain_text = plain_text.upper().replace("J", "I")
@@ -45,6 +46,8 @@ def playfair_encrypt(plain_text, key):
         row1, col1 = find_position(key_matrix, char1)
         row2, col2 = find_position(key_matrix, char2)
 
+        case_info.append((char1.isupper(), char2.isupper()))
+
         if row1 == row2:
             encrypted_text += key_matrix[row1][(col1 + 1) % 5] + key_matrix[row2][(col2 + 1) % 5]
         elif col1 == col2:
@@ -52,9 +55,9 @@ def playfair_encrypt(plain_text, key):
         else:
             encrypted_text += key_matrix[row1][col2] + key_matrix[row2][col1]
 
-    return encrypted_text
+    return encrypted_text, case_info
 
-def playfair_decrypt(encrypted_text, key):
+def playfair_decrypt(encrypted_text, key, case_info):
     key_matrix = generate_key_matrix(key)
     decrypted_text = ''
 
@@ -64,12 +67,17 @@ def playfair_decrypt(encrypted_text, key):
         row1, col1 = find_position(key_matrix, char1)
         row2, col2 = find_position(key_matrix, char2)
 
+        upper1, upper2 = case_info.pop(0)
+
         if row1 == row2:
-            decrypted_text += key_matrix[row1][(col1 - 1) % 5] + key_matrix[row2][(col2 - 1) % 5]
+            decrypted_text += (key_matrix[row1][(col1 - 1) % 5] + key_matrix[row2][(col2 - 1) % 5]).lower() if not upper1 else (
+                        key_matrix[row1][(col1 - 1) % 5] + key_matrix[row2][(col2 - 1) % 5]).upper()
         elif col1 == col2:
-            decrypted_text += key_matrix[(row1 - 1) % 5][col1] + key_matrix[(row2 - 1) % 5][col2]
+            decrypted_text += (key_matrix[(row1 - 1) % 5][col1] + key_matrix[(row2 - 1) % 5][col2]).lower() if not upper1 else (
+                        key_matrix[(row1 - 1) % 5][col1] + key_matrix[(row2 - 1) % 5][col2]).upper()
         else:
-            decrypted_text += key_matrix[row1][col2] + key_matrix[row2][col1]
+            decrypted_text += (key_matrix[row1][col2] + key_matrix[row2][col1]).lower() if not upper1 else (
+                        key_matrix[row1][col2] + key_matrix[row2][col1]).upper()
 
     return decrypted_text
 
@@ -84,18 +92,21 @@ def main():
         plaintext = st.text_input("Enter the plain text:")
         key = st.text_input("Enter the key:")
         if st.button("Encrypt"):
-            encrypted_text = playfair_encrypt(plaintext, key)
+            encrypted_text, _ = playfair_encrypt(plaintext, key)
             st.success(f"Encrypted Text: {encrypted_text}")
     
     elif action == "Decrypt":
         ciphertext = st.text_input("Enter the cipher text:")
         key = st.text_input("Enter the key:")
+        case_info = st.text_input("Enter the case information (0 or 1 for each pair of letters):")
+        case_info = [bool(int(x)) for x in case_info] if case_info else []
         if st.button("Decrypt"):
-            decrypted_text = playfair_decrypt(ciphertext, key)
+            decrypted_text = playfair_decrypt(ciphertext, key, case_info)
             st.success(f"Decrypted Text: {decrypted_text}")
     
     # Display Playfair matrix table
     key_matrix = generate_key_matrix(key)
     st.table(key_matrix)
+
 if __name__ == "__main__":
     main()
