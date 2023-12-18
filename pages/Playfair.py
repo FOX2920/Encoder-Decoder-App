@@ -73,26 +73,29 @@ def playfair_decrypt(encrypted_text, key):
 
     return decrypted_text
 
-# Streamlit app
-st.title("Playfair Cipher Encryption and Decryption")
-
-# Input
-action = st.radio("Select Action", ["Encrypt", "Decrypt"])
-
-if action == "Encrypt":
-    plaintext = st.text_input("Enter the plain text:")
-    key = st.text_input("Enter the key:")
-    if st.button("Encrypt"):
-        encrypted_text = playfair_encrypt(plaintext, key)
-        st.success(f"Encrypted Text: {encrypted_text}")
-
-elif action == "Decrypt":
-    ciphertext = st.text_input("Enter the cipher text:")
-    key = st.text_input("Enter the key:")
-    if st.button("Decrypt"):
-        decrypted_text = playfair_decrypt(ciphertext, key)
-        st.success(f"Decrypted Text: {decrypted_text}")
-
-# Display Playfair matrix table
-key_matrix = generate_key_matrix(key)
-st.table(key_matrix)
+def main():
+    # Streamlit app
+    st.title("Playfair Cipher Encryption and Decryption")
+    
+    # Input
+    action = st.radio("Select Action", ["Encrypt", "Decrypt"])
+    
+    if action == "Encrypt":
+        plaintext = st.text_input("Enter the plain text:")
+        key = st.text_input("Enter the key:")
+        if st.button("Encrypt"):
+            encrypted_text = playfair_encrypt(plaintext, key)
+            st.success(f"Encrypted Text: {encrypted_text}")
+    
+    elif action == "Decrypt":
+        ciphertext = st.text_input("Enter the cipher text:")
+        key = st.text_input("Enter the key:")
+        if st.button("Decrypt"):
+            decrypted_text = playfair_decrypt(ciphertext, key)
+            st.success(f"Decrypted Text: {decrypted_text}")
+    
+    # Display Playfair matrix table
+    key_matrix = generate_key_matrix(key)
+    st.table(key_matrix)
+if __name__ == "__main__":
+    main()
