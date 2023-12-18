@@ -14,20 +14,18 @@ st.title("XOR Cipher Decryption App")
 
 uploaded_file = st.file_uploader("Upload an encrypted image", type=["jpg", "jpeg"])
 
-
-
 if uploaded_file is not None:
     with open(uploaded_file, "rb") as file:
         encrypted_data = file.read()
+    
     st.subheader("Encryption Key")
     key = st.sidebar.text_input("Enter the encryption key (6 letters):", "uithcm")
 
     if len(key) != 6:
         st.sidebar.warning("Please enter a 6-letter key.")
     else:
-        # Read the uploaded image file
-        encrypted_data = decrypt(encrypted_data, keu)
-
+        # Correct the function call to decrypt
+        decrypted_data = decrypt(encrypted_data, key)
 
         # Display the decrypted image
         st.image(BytesIO(decrypted_data), caption="Decrypted Image", use_column_width=True)
