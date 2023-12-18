@@ -1,122 +1,98 @@
 import streamlit as st
 
-def toLowerCase(plain):
-    return plain.lower()
+def generate_key_matrix(key):
+    key = key.upper().replace("J", "I")
+    key_matrix = [['' for _ in range(5)] for _ in range(5)]
+    key_set = set()
 
-def removeSpaces(plain):
-    return ''.join(plain.split())
-
-def generateKeyTable(key):
-    keyT = [['' for _ in range(5)] for _ in range(5)]
-    dicty = {chr(i + 97): 0 for i in range(26)}
-
-    for i in range(len(key)):
-        if key[i] != 'j':
-            dicty[key[i]] = 2
-    dicty['j'] = 1
-
-    i, j, k = 0, 0, 0
-    while k < len(key):
-        if dicty[key[k]] == 2:
-            dicty[key[k]] -= 1
-            keyT[i][j] = key[k]
-            j += 1
-            if j == 5:
-                i += 1
-                j = 0
-        k += 1
-
-    for k in dicty.keys():
-        if dicty[k] == 0:
-            keyT[i][j] = k
+    i, j = 0, 0
+    for letter in key + 'ABCDEFGHIKLMNOPQRSTUVWXYZ':
+        if letter not in key_set:
+            key_matrix[i][j] = letter
+            key_set.add(letter)
             j += 1
             if j == 5:
                 i += 1
                 j = 0
 
-    return keyT
+    return key_matrix
 
-def encrypt(str, keyT):
-    ps = len(str)
-    i = 0
-    while i < ps:
-        a = search(keyT, str[i], str[i+1])
-        if a[0] == a[2]:
-            str = str[:i] + keyT[a[0]][mod5(a[1]+1)] + keyT[a[0]][mod5(a[3]+1)] + str[i+2:]
-        elif a[1] == a[3]:
-            str = str[:i] + keyT[mod5(a[0]+1)][a[1]] + keyT[mod5(a[2]+1)][a[1]] + str[i+2:]
-        else:
-            str = str[:i] + keyT[a[0]][a[3]] + keyT[a[2]][a[1]] + str[i+2:]
-        i += 2
-
-    return str
-
-def decrypt(str, keyT):
-    ps = len(str)
-    i = 0
-    while i < ps:
-        a = search(keyT, str[i], str[i+1])
-        if a[0] == a[2]:
-            str = str[:i] + keyT[a[0]][mod5(a[1]-1)] + keyT[a[0]][mod5(a[3]-1)] + str[i+2:]
-        elif a[1] == a[3]:
-            str = str[:i] + keyT[mod5(a[0]-1)][a[1]] + keyT[mod5(a[2]-1)][a[1]] + str[i+2:]
-        else:
-            str = str[:i] + keyT[a[0]][a[3]] + keyT[a[2]][a[1]] + str[i+2:]
-        i += 2
-
-    return str
-
-def search(keyT, a, b):
-    arr = [0, 0, 0, 0]
-
-    if a == 'j':
-        a = 'i'
-    elif b == 'j':
-        b = 'i'
-
+def find_position(matrix, char):
     for i in range(5):
         for j in range(5):
-            if keyT[i][j] == a:
-                arr[0], arr[1] = i, j
-            elif keyT[i][j] == b:
-                arr[2], arr[3] = i, j
+            if matrix[i][j] == char:
+                return i, j
 
-    return arr
+def playfair_encrypt(plain_text, key):
+    key_matrix = generate_key_matrix(key)
+    encrypted_text = ''
 
-def mod5(a):
-    if a < 0:
-        a += 5
-    return a % 5
+    # Preprocess plaintext
+    plain_text = plain_text.upper().replace("J", "I")
+    plain_text = [char for char in plain_text if char.isalpha()]
 
-def playfair_cipher_app():
-    st.title("Playfair Cipher Encryption and Decryption App")
+    # Add a placeholder letter between consecutive identical letters
+    for i in range(1, len(plain_text), 2):
+        if plain_text[i] == plain_text[i - 1]:
+            plain_text.insert(i, 'X')
 
-    # Input key
-    key = st.text_input("Enter Key (no spaces, use 'i' instead of 'j'):")
+    if len(plain_text) % 2 != 0:
+        plain_text.append('X')
 
-    # Input message and mode (Encrypt or Decrypt)
-    message = st.text_area("Enter Message:")
-    mode = st.radio("Select Mode:", ["Encrypt", "Decrypt"])
+    # Encrypt pairs of letters
+    for i in range(0, len(plain_text), 2):
+        char1, char2 = plain_text[i], plain_text[i + 1]
+        row1, col1 = find_position(key_matrix, char1)
+        row2, col2 = find_position(key_matrix, char2)
 
-    if key and message:
-        key = removeSpaces(toLowerCase(key))
-        message = removeSpaces(toLowerCase(message))
-        keyT = generateKeyTable(key)
-
-        # Display Playfair matrix
-        st.subheader("Playfair Matrix:")
-        st.table(keyT)
-
-        # Perform encryption or decryption based on mode
-        if mode == "Encrypt":
-            result = encrypt(message, keyT)
+        if row1 == row2:
+            encrypted_text += key_matrix[row1][(col1 + 1) % 5] + key_matrix[row2][(col2 + 1) % 5]
+        elif col1 == col2:
+            encrypted_text += key_matrix[(row1 + 1) % 5][col1] + key_matrix[(row2 + 1) % 5][col2]
         else:
-            result = decrypt(message, keyT)
+            encrypted_text += key_matrix[row1][col2] + key_matrix[row2][col1]
 
-        # Display result
-        st.subheader(f"Result ({mode}):")
-        st.write(result)
+    return encrypted_text
 
-# Run the Streamlit app
+def playfair_decrypt(encrypted_text, key):
+    key_matrix = generate_key_matrix(key)
+    decrypted_text = ''
+
+    # Decrypt pairs of letters
+    for i in range(0, len(encrypted_text), 2):
+        char1, char2 = encrypted_text[i], encrypted_text[i + 1]
+        row1, col1 = find_position(key_matrix, char1)
+        row2, col2 = find_position(key_matrix, char2)
+
+        if row1 == row2:
+            decrypted_text += key_matrix[row1][(col1 - 1) % 5] + key_matrix[row2][(col2 - 1) % 5]
+        elif col1 == col2:
+            decrypted_text += key_matrix[(row1 - 1) % 5][col1] + key_matrix[(row2 - 1) % 5][col2]
+        else:
+            decrypted_text += key_matrix[row1][col2] + key_matrix[row2][col1]
+
+    return decrypted_text
+
+def main():
+    st.title("Playfair Cipher Encryption and Decryption")
+
+    # Input plaintext and key from the user
+    plaintext = st.text_input("Enter the plaintext:")
+    key = st.text_input("Enter the key:")
+
+    # Display Playfair matrix table
+    key_matrix = generate_key_matrix(key)
+    st.table(key_matrix)
+
+    if st.button("Encrypt"):
+        # Encrypt the plaintext
+        encrypted_text = playfair_encrypt(plaintext, key)
+        st.success(f"Encrypted Text: {encrypted_text}")
+
+    if st.button("Decrypt"):
+        # Decrypt the encrypted text
+        decrypted_text = playfair_decrypt(encrypted_text, key)
+        st.success(f"Decrypted Text: {decrypted_text}")
+
 if __name__ == "__main__":
-    playfair_cipher_app()
+    main()
