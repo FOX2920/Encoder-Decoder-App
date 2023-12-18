@@ -16,7 +16,7 @@ def caesar_cipher(text, key, decrypt=False):
 def brute_force_decrypt(ciphertext):
     results = {}
     for key in range(26):
-        decrypted_text = caesar_cipher(ciphertext, key, decrypt=False)
+        decrypted_text = caesar_cipher(ciphertext, key, decrypt=True)
         results[key] = decrypted_text
     return results
 
