@@ -1,59 +1,45 @@
 import streamlit as st
 
-def vigenere_encrypt(plain_text, key):
-    encrypted_text = ""
-    key = key.upper()
-    key_index = 0
-
-    for char in plain_text:
+def vigenere_cipher(text, key, encrypt=True):
+    result = ''
+    key_length = len(key)
+    for i in range(len(text)):
+        char = text[i]
         if char.isalpha():
-            key_char = key[key_index % len(key)]
-            shift = ord(key_char) - ord('A')
-            if char.isupper():
-                encrypted_text += chr((ord(char) + shift - ord('A')) % 26 + ord('A'))
+            key_char = key[i % key_length].upper()
+            key_offset = ord(key_char) - ord('A')
+            if encrypt:
+                result += encrypt_char(char, key_offset)
             else:
-                encrypted_text += chr((ord(char) + shift - ord('a')) % 26 + ord('a'))
-            key_index += 1
+                result += decrypt_char(char, key_offset)
         else:
-            encrypted_text += char
+            result += char
+    return result
 
-    return encrypted_text
+def encrypt_char(char, key_offset):
+    base = ord('A') if char.isupper() else ord('a')
+    return chr((ord(char) - base + key_offset) % 26 + base)
 
-def vigenere_decrypt(encrypted_text, key):
-    decrypted_text = ""
-    key = key.upper()
-    key_index = 0
+def decrypt_char(char, key_offset):
+    base = ord('A') if char.isupper() else ord('a')
+    return chr((ord(char) - base - key_offset) % 26 + base)
 
-    for char in encrypted_text:
-        if char.isalpha():
-            key_char = key[key_index % len(key)]
-            shift = ord(key_char) - ord('A')
-            if char.isupper():
-                decrypted_text += chr((ord(char) - shift - ord('A')) % 26 + ord('A'))
-            else:
-                decrypted_text += chr((ord(char) - shift - ord('a')) % 26 + ord('a'))
-            key_index += 1
+def main():
+    st.title("Vigenère Cipher Encryption and Decryption")
+
+    operation = st.radio("Select Operation", ["Encrypt", "Decrypt"])
+
+    message = st.text_area("Enter Message:")
+
+    key = st.text_input("Enter Key:")
+
+    if st.button("Perform Operation"):
+        if operation == "Encrypt":
+            result = vigenere_cipher(message, key, encrypt=True)
         else:
-            decrypted_text += char
+            result = vigenere_cipher(message, key, encrypt=False)
 
-    return decrypted_text
+        st.success(f"Result: {result}")
 
-# Streamlit UI
-st.title("Vigenère Cipher Encryption and Decryption")
-
-# Input text
-text = st.text_area("Enter your message:")
-
-# Input key
-key = st.text_input("Enter the encryption/decryption key:")
-
-# Radio box for choosing between encryption and decryption
-operation = st.radio("Select Operation:", ["Encrypt", "Decrypt"])
-
-if operation == "Encrypt":
-    result = vigenere_encrypt(text, key)
-    st.success(f"Encrypted Message: {result}")
-elif operation == "Decrypt":
-    result = vigenere_decrypt(text, key)
-    st.success(f"Decrypted Message: {result}")
-
+if __name__ == "__main__":
+    main()
