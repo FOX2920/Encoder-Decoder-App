@@ -1,8 +1,7 @@
 import streamlit as st
-import io
-from PIL import Image
+import base64
+from io import BytesIO
 
-# XOR decryption function
 def decrypt(ciphertext, key):
     decrypted = bytearray()
     key_len = len(key)
@@ -11,33 +10,27 @@ def decrypt(ciphertext, key):
         decrypted.append(decrypted_byte)
     return bytes(decrypted)
 
-# Streamlit app
 def main():
-    st.title("Image Decryption App")
+    st.title("XOR Cipher Decryptor")
 
-    # Upload image
-    uploaded_file = st.file_uploader("Choose an image file", type=["jpg", "jpeg"])
+    encryption_key = st.text_input("Enter a 6-letter key:")
 
-    if uploaded_file is not None:
-        st.image(uploaded_file, caption="Uploaded Image.", use_column_width=True)
+    if st.button("Decrypt"):
+        if len(encryption_key) == 6:
+            # Use the global variable 'encrypted_data' from your existing code
+            global encrypted_data
 
-        # Input decryption key
-        decryption_key = st.text_input("Enter 6-letter decryption key:")
+            # Decrypt the image with the provided key
+            decrypted_image = decrypt(encrypted_data, encryption_key.encode())
 
-        if len(decryption_key) == 6:
-            # Read image file
-            image_bytes = io.BytesIO(uploaded_file.read())
-            image = Image.open(image_bytes)
-
-            # Decrypt image
-            encrypted_data = image.tobytes()
-            decrypted_data = decrypt(encrypted_data, decryption_key.encode())
-
-            # Display decrypted image
-            decrypted_image = Image.frombytes(image.mode, image.size, decrypted_data)
-            st.image(decrypted_image, caption="Decrypted Image.", use_column_width=True)
+            # Display the decrypted image
+            st.image(decrypted_image, caption="Decrypted Image", use_column_width=True)
         else:
-            st.warning("Please enter a 6-letter decryption key.")
+            st.warning("Please enter a 6-letter key.")
 
 if __name__ == "__main__":
+    # Load encrypted data from the file
+    with open("crypto01.jpg", "rb") as file:
+        encrypted_data = file.read()
+
     main()
