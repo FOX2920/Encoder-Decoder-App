@@ -10,27 +10,30 @@ def decrypt(ciphertext, key):
         decrypted.append(decrypted_byte)
     return bytes(decrypted)
 
-def main():
-    st.title("XOR Cipher Decryptor")
+st.title("XOR Cipher Decryption App")
 
-    encryption_key = st.text_input("Enter a 6-letter key:")
+uploaded_file = st.file_uploader("Upload an encrypted image", type=["jpg", "jpeg"])
 
-    if st.button("Decrypt"):
-        if len(encryption_key) == 6:
-            # Use the global variable 'encrypted_data' from your existing code
-            global encrypted_data
 
-            # Decrypt the image with the provided key
-            decrypted_image = decrypt(encrypted_data, encryption_key.encode())
 
-            # Display the decrypted image
-            st.image(decrypted_image, caption="Decrypted Image", use_column_width=True)
-        else:
-            st.warning("Please enter a 6-letter key.")
-
-if __name__ == "__main__":
-    # Load encrypted data from the file
-    with open("crypto01.jpg", "rb") as file:
+if uploaded_file is not None:
+    with open(uploaded_file, "rb") as file:
         encrypted_data = file.read()
+    st.subheader("Encryption Key")
+    key = st.sidebar.text_input("Enter the encryption key (6 letters):", "uithcm")
 
-    main()
+    if len(key) != 6:
+        st.sidebar.warning("Please enter a 6-letter key.")
+    else:
+        # Read the uploaded image file
+        encrypted_data = decrypt(encrypted_data, keu)
+
+
+        # Display the decrypted image
+        st.image(BytesIO(decrypted_data), caption="Decrypted Image", use_column_width=True)
+
+        # Provide option to download the decrypted image
+        st.sidebar.markdown(
+            f"**Download Decrypted Image:** [decrypted_image_{key}.jpg](data:application/octet-stream;base64,{base64.b64encode(decrypted_data).decode()})",
+            unsafe_allow_html=True
+        )
