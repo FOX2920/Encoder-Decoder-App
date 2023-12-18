@@ -13,7 +13,7 @@ def text_to_ascii(text):
 def main():
     st.title("Capture The Flag")
 
-    operation = st.radio("Select Operation:", ["Decode ASCII to Text", "Encode Text to ASCII"])
+    operation = st.radio("Select Operation:", ["ASCII to Text", "Text to ASCII"])
 
     if operation == "Decode ASCII to Text":
         ascii_input = st.text_area("Enter ASCII Codes:")
