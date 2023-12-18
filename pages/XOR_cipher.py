@@ -19,19 +19,16 @@ if uploaded_file is not None:
         encrypted_data = file.read()
     
     st.subheader("Encryption Key")
-    key = st.sidebar.text_input("Enter the encryption key (6 letters):", "uithcm")
+    key = st.text_input("Enter the encryption key (6 letters):", "b'uithcm'")
 
-    if len(key) != 6:
-        st.sidebar.warning("Please enter a 6-letter key.")
-    else:
-        # Correct the function call to decrypt
-        decrypted_data = decrypt(encrypted_data, key)
+    # Correct the function call to decrypt
+    decrypted_data = decrypt(encrypted_data, key)
 
-        # Display the decrypted image
-        st.image(BytesIO(decrypted_data), caption="Decrypted Image", use_column_width=True)
+    # Display the decrypted image
+    st.image(BytesIO(decrypted_data), caption="Decrypted Image", use_column_width=True)
 
-        # Provide option to download the decrypted image
-        st.sidebar.markdown(
-            f"**Download Decrypted Image:** [decrypted_image_{key}.jpg](data:application/octet-stream;base64,{base64.b64encode(decrypted_data).decode()})",
-            unsafe_allow_html=True
-        )
+    # Provide option to download the decrypted image
+    st.sidebar.markdown(
+        f"**Download Decrypted Image:** [decrypted_image_{key}.jpg](data:application/octet-stream;base64,{base64.b64encode(decrypted_data).decode()})",
+        unsafe_allow_html=True
+    )
