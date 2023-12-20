@@ -1,5 +1,7 @@
+
+
+User
 import streamlit as st
-import pandas as pd
 
 def caesar_cipher(text, key, decrypt=False):
     result = ""
@@ -23,7 +25,6 @@ def brute_force_decrypt(ciphertext):
 
 def main():
     st.title("Caesar Cipher Encryption and Decryption")
-    st.set_page_config(layout="wide")
 
     operation = st.radio("Select Operation:", ["Encryption", "Decryption", "Brute-Force Attack"])
 
@@ -32,16 +33,15 @@ def main():
         input_text = st.text_area(f"Enter {'Plaintext' if operation == 'Encryption' else 'Ciphertext'}:")
         if st.button(f"Perform {operation}"):
             result = caesar_cipher(input_text, key) if operation == "Encryption" else caesar_cipher(input_text, key, decrypt=True)
-            st.text(f"{operation} Result: {result}")
+            st.success(f"{operation} Result:\n {result}")
 
     elif operation == "Brute-Force Attack":
         ciphertext = st.text_area("Enter Ciphertext:")
         if st.button("Perform Brute-Force Attack"):
             results = brute_force_decrypt(ciphertext)
             st.text("Brute-Force Attack Results:")
-            # Tạo DataFrame từ kết quả để hiển thị dưới dạng bảng
-            df = pd.DataFrame(list(results.items()), columns=["Key", "Decrypted Text"])
-            st.table(df)
+            for key, decrypted_text in results.items():
+                st.text(f"Key {key}: {decrypted_text}")
 
 if __name__ == "__main__":
     main()
