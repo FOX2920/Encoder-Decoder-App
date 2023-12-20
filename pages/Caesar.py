@@ -1,6 +1,3 @@
-
-
-User
 import streamlit as st
 
 def caesar_cipher(text, key, decrypt=False):
