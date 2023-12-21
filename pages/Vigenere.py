@@ -1,28 +1,57 @@
 import streamlit as st
+import numpy as np
 
-def vigenere_cipher(text, key, encrypt=True):
-    result = ''
-    key_length = len(key)
-    for i in range(len(text)):
-        char = text[i]
+def generate_vigenere_table():
+    alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    vigenere_table = np.zeros((26, 26), dtype='str')
+
+    for i in range(26):
+        for j in range(26):
+            vigenere_table[i, j] = alphabet[(i + j) % 26]
+
+    return vigenere_table
+
+def vigenere_encrypt(plaintext, key):
+    alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    vigenere_table = generate_vigenere_table()
+    ciphertext = ""
+
+    key = key.upper()
+    key_index = 0
+
+    for char in plaintext:
         if char.isalpha():
-            key_char = key[i % key_length].upper()
-            key_offset = ord(key_char) - ord('A')
-            if encrypt:
-                result += encrypt_char(char, key_offset)
-            else:
-                result += decrypt_char(char, key_offset)
+            row = alphabet.index(key[key_index])
+            col = alphabet.index(char.upper())
+
+            ciphertext += vigenere_table[row, col]
+
+            key_index = (key_index + 1) % len(key)
         else:
-            result += char
-    return result
+            ciphertext += char
 
-def encrypt_char(char, key_offset):
-    base = ord('A') if char.isupper() else ord('a')
-    return chr((ord(char) - base + key_offset) % 26 + base)
+    return ciphertext
 
-def decrypt_char(char, key_offset):
-    base = ord('A') if char.isupper() else ord('a')
-    return chr((ord(char) - base - key_offset) % 26 + base)
+def vigenere_decrypt(ciphertext, key):
+    alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    vigenere_table = generate_vigenere_table()
+    plaintext = ""
+
+    key = key.upper()
+    key_index = 0
+
+    for char in ciphertext:
+        if char.isalpha():
+            row = alphabet.index(key[key_index])
+            col = np.where(vigenere_table[row, :] == char.upper())[0][0]
+
+            plaintext += alphabet[col]
+
+            key_index = (key_index + 1) % len(key)
+        else:
+            plaintext += char
+
+    return plaintext
 
 def main():
     st.title("Vigenère Cipher Encryption and Decryption")
@@ -35,9 +64,9 @@ def main():
 
     if st.button("Perform Operation"):
         if operation == "Encrypt":
-            result = vigenere_cipher(message, key, encrypt=True)
+            result = vigenere_encrypt(message, key)
         else:
-            result = vigenere_cipher(message, key, encrypt=False)
+            result = vigenere_decrypt(message, key)
 
         st.success(f"Result: {result}")
 
